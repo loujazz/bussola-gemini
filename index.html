@@ -115,7 +115,7 @@
                 
                 <!-- Hint Fluttuante di Aiuto -->
                 <div id="interaction-tip" class="absolute top-3 left-3 bg-slate-950/90 text-amber-400 text-[10px] font-black py-1.5 px-3 rounded-lg border border-amber-500/30 shadow-lg pointer-events-none z-20 uppercase tracking-widest animate-pulse">
-                    🖱️ Sposta la piastra acrilica, ruota la ghiera o lo specchio!
+                    💡 Clicca gli hotspot arancioni per esplorare i componenti della bussola
                 </div>
 
                 <!-- SVG INTEGRATO GIGANTE (Contiene sia la Mappa che la Bussola in modo perfettamente proporzionato e scalabile) -->
@@ -668,7 +668,7 @@
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button onclick="adjustBodyRot(-1)" class="shrink-0 w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded border border-slate-700 flex items-center justify-center leading-none">−</button>
-                            <input type="range" id="slider-body-rot" min="0" max="359" value="24" class="flex-1 h-1 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-500">
+                            <input type="range" id="slider-body-rot" min="0" max="359" value="0" class="flex-1 h-1 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-500">
                             <button onclick="adjustBodyRot(1)" class="shrink-0 w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded border border-slate-700 flex items-center justify-center leading-none">+</button>
                         </div>
                     </div>
@@ -679,7 +679,7 @@
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button onclick="adjustBezelRot(-1)" class="shrink-0 w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded border border-slate-700 flex items-center justify-center leading-none">−</button>
-                            <input type="range" id="slider-bezel-rot" min="0" max="359" value="336" class="flex-1 h-1 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-500">
+                            <input type="range" id="slider-bezel-rot" min="0" max="359" value="0" class="flex-1 h-1 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-500">
                             <button onclick="adjustBezelRot(1)" class="shrink-0 w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded border border-slate-700 flex items-center justify-center leading-none">+</button>
                         </div>
                     </div>
@@ -721,13 +721,13 @@
 
         // Stato dell'Applicazione
         let selectedPartId = null;
-        let bodyRotation = 24;  // Angolo di default allineato su Croce Arcana
-        let bezelRotation = 336; // Angolo di allineamento per parallele con i meridiani verticali
+        let bodyRotation = 0;   // Nord
+        let bezelRotation = 0;  // Ghiera allineata a Nord
         let currentTab = 'explore';
         let isWorkspaceMaximized = false;
         let compassScale = 1.15;
-        let compassX = 350; // Posizione X iniziale sopra Doganaccia
-        let compassY = 700; // Posizione Y iniziale sopra Doganaccia
+        let compassX = 500; // Centro SVG
+        let compassY = 500; // Centro SVG
 
         // Gestione Unificata Interazioni Mouse / Touch
         const cartographySvg   = document.getElementById('cartography-svg');
@@ -779,6 +779,10 @@
             applyRotations();
             changeOpacity(70);
             changeCompassScale(1.15);
+
+            // Sfondo neutro: mappa SVG hardcoded mai visibile
+            document.getElementById('map-bg-rect').style.display = 'none';
+            document.getElementById('map-drawn-content').style.display = 'none';
 
             requestAnimationFrame(animateFrame);
         }
@@ -886,6 +890,8 @@
 
             if (tabId === 'explore') {
                 document.getElementById('section-explore').classList.remove('hidden');
+                document.getElementById('map-bg-rect').style.display = 'none';
+                document.getElementById('map-drawn-content').style.display = 'none';
             } else if (tabId === 'map-align') {
                 document.getElementById('section-map-align').classList.remove('hidden'); 
                 updateExerciseProgress();
@@ -992,11 +998,11 @@
         }
 
         function resetRotationsAndScale() {
-            bodyRotation = 24;
-            bezelRotation = 336;
+            bodyRotation = 0;
+            bezelRotation = 0;
             compassScale = 1.15;
-            compassX = 350;
-            compassY = 700;
+            compassX = 500;
+            compassY = 500;
             
             const opSlider = document.getElementById('slider-opacity');
             if (opSlider) opSlider.value = 70;
