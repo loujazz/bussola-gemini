@@ -82,12 +82,17 @@
                         Tavolo da Disegno
                     </span>
                     <!-- ELEMENTO COMPASS-STATUS PER PREVENIRE CRASH DI INNERHTML -->
-                    <span id="compass-status" class="text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5 uppercase tracking-wider">
+                    <span id="compass-status" class="text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5 uppercase tracking-wider whitespace-nowrap">
                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Pronto
                     </span>
                 </div>
                 
                 <div class="flex items-center gap-1.5">
+                    <!-- Bottone Solo Bussola -->
+                    <button onclick="hideMap()" id="btn-hide-map" title="Nascondi mappa — sfondo neutro"
+                        class="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all">
+                        🧭 Solo Bussola
+                    </button>
                     <!-- Mappe precaricate -->
                     <button onclick="loadMapFromUrl('maps/Monte%20Baldo%20e%20Lago%20di%20Garda.png', 'Monte Baldo')"
                         class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all">
@@ -1401,6 +1406,14 @@
             const badge = document.getElementById('map-upload-badge');
             if (badge) { badge.textContent = name; badge.classList.remove('hidden'); }
             updateStatus(`<span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span> ${name}`);
+        }
+
+        function hideMap() {
+            const imgEl = document.getElementById('custom-map-image');
+            if (imgEl) { imgEl.style.display = 'none'; }
+            const badge = document.getElementById('map-upload-badge');
+            if (badge) badge.classList.add('hidden');
+            updateStatus(`<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Pronto`);
         }
 
         // COMPENSATORE DECLINAZIONE
