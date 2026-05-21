@@ -24,6 +24,12 @@
         .transition-all-300 {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        @keyframes snapFlash {
+            0%   { color: #fff; text-shadow: 0 0 12px #22c55e; }
+            50%  { color: #22c55e; text-shadow: 0 0 20px #22c55e; }
+            100% { color: inherit; text-shadow: none; }
+        }
+        .snap-flash { animation: snapFlash 0.4s ease-out; }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen topo-bg flex flex-col">
@@ -728,6 +734,11 @@
         let pointB = null;       // {x, y} in coordinate SVG
         let placingPoint = null; // null | 'A' | 'B'
 
+        // CTM cachato per getSVGCoords (evita layout flush su ogni mousemove)
+        let cachedCTM = null;
+        // true mentre la ghiera è ancorata al punto Nord
+        let bezelSnapped = false;
+
         window.onload = function() {
             renderPartsGrid();
             setupSliders();
@@ -977,16 +988,23 @@
         function getSVGCoords(e) {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            // getScreenCTM gestisce correttamente scaling, letterbox e CSS transforms
+            if (!cachedCTM) updateCachedCTM();
             const pt = cartographySvg.createSVGPoint();
             pt.x = clientX;
             pt.y = clientY;
-            const svgP = pt.matrixTransform(cartographySvg.getScreenCTM().inverse());
+            const svgP = pt.matrixTransform(cachedCTM.inverse());
             return { x: svgP.x, y: svgP.y };
+        }
+
+        function updateCachedCTM() {
+            cachedCTM = cartographySvg.getScreenCTM();
         }
 
         // DISPOSITIVO DI INTERAZIONE MULTI-ZONE (Trascinamento / Rotazione Ghiera / Rotazione Specchio)
         function setupInteractiveControls() {
+            updateCachedCTM();
+            window.addEventListener('resize', updateCachedCTM);
+
             cartographySvg.addEventListener('mousedown', onDragStart);
             window.addEventListener('mousemove', onDragMove);
             window.addEventListener('mouseup', onDragEnd);
@@ -1065,9 +1083,20 @@
 
             if (dragMode === 'rotate-bezel') {
                 const angleDiff = mouseAngle - dragStartAngle;
-                bezelRotation = Math.round((dragStartRotations.bezel + angleDiff + 360) % 360);
+                const rawBezel = (dragStartRotations.bezel + angleDiff + 360) % 360;
+                const snapTarget = (360 - bodyRotation % 360) % 360;
+                if (angularDiff(rawBezel, snapTarget) <= 8) {
+                    bezelRotation = Math.round(snapTarget);
+                    if (!bezelSnapped) {
+                        bezelSnapped = true;
+                        triggerSnapFeedback();
+                    }
+                } else {
+                    bezelRotation = Math.round(rawBezel);
+                    bezelSnapped = false;
+                }
                 applyRotations();
-            } 
+            }
             else if (dragMode === 'rotate-body') {
                 const angleDiff = mouseAngle - dragStartAngle;
                 bodyRotation = Math.round((dragStartRotations.body + angleDiff + 360) % 360);
@@ -1091,10 +1120,6 @@
         }
 
         function updateCompassPosition() {
-            const el = document.getElementById('compass-draggable-group');
-            if (el) {
-                el.setAttribute('transform', `translate(${compassX}, ${compassY}) scale(${compassScale})`);
-            }
             updateExerciseProgress();
         }
 
@@ -1150,6 +1175,15 @@
         function angularDiff(a, b) {
             let d = Math.abs(a - b) % 360;
             return d > 180 ? 360 - d : d;
+        }
+
+        function triggerSnapFeedback() {
+            const el = document.getElementById('compass-reading');
+            if (!el) return;
+            el.classList.remove('snap-flash');
+            void el.offsetWidth; // forza reflow per riavviare l'animazione
+            el.classList.add('snap-flash');
+            setTimeout(() => el.classList.remove('snap-flash'), 400);
         }
 
         // POSIZIONAMENTO PUNTI SULLA MAPPA
@@ -1273,7 +1307,8 @@
             needleVelocity *= 0.83;
             needleSway += needleVelocity;
 
-            // Applica tutti i transform SVG atomicamente nello stesso frame
+            // Applica tutti e 4 i transform SVG atomicamente nello stesso frame
+            if (compassGroup)   compassGroup.setAttribute('transform',   `translate(${compassX}, ${compassY}) scale(${compassScale})`);
             if (svgCompassMain) svgCompassMain.setAttribute('transform', `rotate(${bodyRotation}, 0, 0)`);
             if (svgBezelGroup)  svgBezelGroup.setAttribute('transform',  `rotate(${bezelRotation}, 0, 0)`);
             if (svgNeedleGroup) svgNeedleGroup.setAttribute('transform', `rotate(${needleSway + tremor}, 0, 0)`);
