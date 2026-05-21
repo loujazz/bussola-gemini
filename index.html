@@ -88,6 +88,15 @@
                 </div>
                 
                 <div class="flex items-center gap-1.5">
+                    <!-- Mappe precaricate -->
+                    <button onclick="loadMapFromUrl('maps/Monte%20Baldo%20e%20Lago%20di%20Garda.png', 'Monte Baldo')"
+                        class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all">
+                        🏔️ Monte Baldo
+                    </button>
+                    <button onclick="loadMapFromUrl('maps/Monte%20Cusna%20e%20Appennino%20Reggiano.png', 'Monte Cusna')"
+                        class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all">
+                        🏔️ Monte Cusna
+                    </button>
                     <!-- Bottone Upload Mappa -->
                     <label class="cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all" title="PNG/JPG/WebP · Consigliato 1000×1000 px (1:1)">
                         <span>🗺️</span> <span>Carica Mappa <span class="text-[9px] text-slate-500 font-normal">1000×1000</span></span>
@@ -1376,6 +1385,16 @@
         function toggleMapOverlay(visible) {
             const overlay = document.getElementById('map-drawn-content');
             if (overlay) overlay.style.display = visible ? 'block' : 'none';
+        }
+
+        function loadMapFromUrl(url, name) {
+            const imgEl = document.getElementById('custom-map-image');
+            if (imgEl) { imgEl.setAttribute('href', url); imgEl.style.display = 'block'; }
+            document.getElementById('map-bg-rect').style.display = 'none';
+            document.getElementById('map-drawn-content').style.display = 'none';
+            const badge = document.getElementById('map-upload-badge');
+            if (badge) { badge.textContent = name; badge.classList.remove('hidden'); }
+            updateStatus(`<span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span> ${name}`);
         }
 
         // COMPENSATORE DECLINAZIONE
