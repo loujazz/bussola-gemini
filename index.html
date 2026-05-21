@@ -704,8 +704,12 @@
         let compassY = 700; // Posizione Y iniziale sopra Doganaccia
 
         // Gestione Unificata Interazioni Mouse / Touch
-        const cartographySvg = document.getElementById('cartography-svg');
-        const compassGroup = document.getElementById('compass-draggable-group');
+        const cartographySvg   = document.getElementById('cartography-svg');
+        const compassGroup     = document.getElementById('compass-draggable-group');
+        // Nodi SVG cachati per il loop rAF (evita getElementById 60×/s)
+        const svgCompassMain   = document.getElementById('compass-main-body');
+        const svgBezelGroup    = document.getElementById('bezel-group');
+        const svgNeedleGroup   = document.getElementById('needle-group');
         
         let isDragging = false;
         let dragMode = null; // 'move', 'rotate-bezel', 'rotate-body'
@@ -745,7 +749,7 @@
             changeOpacity(70);
             changeCompassScale(1.15);
 
-            requestAnimationFrame(animateNeedlePhysics);
+            requestAnimationFrame(animateFrame);
         }
 
         // Funzione di salvaguardia per aggiornare l'HTML di stato prevenendo errori se l'elemento viene rimosso o manca nel DOM
@@ -1126,17 +1130,8 @@
             if (sliderBody) sliderBody.value = bodyRotation;
             if (sliderBezel) sliderBezel.value = bezelRotation;
 
-            const compassMain = document.getElementById('compass-main-body');
-            if (compassMain) {
-                compassMain.setAttribute('transform', `rotate(${bodyRotation}, 0, 0)`);
-            }
-
-            const bezelGroup = document.getElementById('bezel-group');
-            if (bezelGroup) {
-                bezelGroup.setAttribute('transform', `rotate(${bezelRotation}, 0, 0)`);
-            }
-
             // Lettura bussola = graduazione sotto la linea di fede = f(ghiera)
+            // (i transform SVG sono applicati in animateFrame via rAF)
             const reading = (360 - bezelRotation % 360 + 360) % 360;
             const readingEl = document.getElementById('compass-reading');
             if (readingEl) readingEl.textContent = `${reading}°`;
@@ -1254,10 +1249,11 @@
             }
         }
 
-        // ANIMAZIONE FISICA FLUIDA DELL'AGO CALAMITATO (Invariata)
-        function animateNeedlePhysics() {
+        // LOOP rAF UNIFICATO: fisica ago + tutti i transform SVG nello stesso frame
+        // Questo elimina lo sfarfallio causato da transform applicati in frame diversi
+        function animateFrame() {
             const bodyDiff = bodyRotation - lastBodyRot;
-            
+
             let filteredImpulse = bodyDiff;
             if (bodyDiff > 180) filteredImpulse -= 360;
             if (bodyDiff < -180) filteredImpulse += 360;
@@ -1269,24 +1265,21 @@
             const tremor = Math.sin(Date.now() * 0.012) * 0.15;
             const targetOffset = -bodyRotation;
             let needleDiff = targetOffset - needleSway;
-            
+
             while (needleDiff < -180) needleDiff += 360;
             while (needleDiff > 180) needleDiff -= 360;
 
-            const springForce = 0.07; 
-            const fluidDamping = 0.83; 
-
-            needleVelocity += needleDiff * springForce;
-            needleVelocity *= fluidDamping;
+            needleVelocity += needleDiff * 0.07;
+            needleVelocity *= 0.83;
             needleSway += needleVelocity;
 
-            const needleGroup = document.getElementById('needle-group');
-            if (needleGroup) {
-                needleGroup.setAttribute('transform', `rotate(${needleSway + tremor}, 0, 0)`);
-            }
+            // Applica tutti i transform SVG atomicamente nello stesso frame
+            if (svgCompassMain) svgCompassMain.setAttribute('transform', `rotate(${bodyRotation}, 0, 0)`);
+            if (svgBezelGroup)  svgBezelGroup.setAttribute('transform',  `rotate(${bezelRotation}, 0, 0)`);
+            if (svgNeedleGroup) svgNeedleGroup.setAttribute('transform', `rotate(${needleSway + tremor}, 0, 0)`);
 
             lastBodyRot = bodyRotation;
-            requestAnimationFrame(animateNeedlePhysics);
+            requestAnimationFrame(animateFrame);
         }
 
         // UPLOAD MAPPA PERSONALIZZATA
@@ -1302,6 +1295,9 @@
                 }
                 const bgRect = document.getElementById('map-bg-rect');
                 if (bgRect) bgRect.style.display = 'none';
+
+                const drawnContent = document.getElementById('map-drawn-content');
+                if (drawnContent) drawnContent.style.display = 'none';
 
                 const badge = document.getElementById('map-upload-badge');
                 if (badge) {
