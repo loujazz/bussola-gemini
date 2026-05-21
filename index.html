@@ -1066,14 +1066,14 @@
             const hint = document.getElementById('interaction-tip');
             if (hint) hint.classList.add('hidden');
 
-            // Zone fisiche: bezel ring (r 88-125), interno capsula o parte alta → corpo, resto → sposta
-            if (distFromCenter >= 88 && distFromCenter <= 125) {
+            // Zone fisiche: tutta la capsula (r ≤ 125) → ghiera; parte alta baseplate → corpo; resto → sposta
+            if (distFromCenter <= 125) {
                 dragMode = 'rotate-bezel';
                 dragStartAngle = mouseAngle;
                 dragStartRotations.bezel = bezelRotation;
                 updateStatus(`<span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span> Ruotando Ghiera`);
             }
-            else if (distFromCenter < 88 || localY < -120) {
+            else if (localY < -120) {
                 dragMode = 'rotate-body';
                 dragStartAngle = mouseAngle;
                 dragStartRotations.body = bodyRotation;
