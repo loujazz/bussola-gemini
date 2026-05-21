@@ -19,6 +19,7 @@
         }
         .cursor-grab { cursor: grab; }
         .cursor-grabbing { cursor: grabbing; }
+        .cursor-crosshair { cursor: crosshair; }
         /* Transizioni fluide */
         .transition-all-300 {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -39,7 +40,7 @@
                 </div>
                 <div>
                     <h1 class="text-base font-black tracking-tight text-white flex items-center gap-2 uppercase">
-                        Bussola & Cartografia <span class="text-[10px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">Silva 3-Step</span>
+                        Bussola & Cartografia <span class="text-[10px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">Silva 2-Step</span>
                     </h1>
                     <p class="text-[11px] text-slate-400">Doganaccia e Passo della Croce Arcana • Allineamento Trasparente sulla Mappa</p>
                 </div>
@@ -204,6 +205,18 @@
                         </g> <!-- FINE MAP-DRAWN-CONTENT -->
                     </g> <!-- FINE LAYER 1 MAPPA -->
 
+                    <!-- LAYER ROTTA PERSONALIZZATA -->
+                    <g id="route-layer">
+                        <line id="route-line" x1="0" y1="0" x2="0" y2="0"
+                              stroke="#22c55e" stroke-width="3.5" stroke-dasharray="10 5" opacity="0.9"
+                              marker-end="url(#arrowhead-green)" style="display:none"/>
+                        <circle id="point-a-marker" cx="0" cy="0" r="11" fill="#3b82f6" stroke="#ffffff" stroke-width="2.5" style="display:none"/>
+                        <text id="point-a-label" x="0" y="0" font-size="16" font-weight="900" fill="#ffffff"
+                              text-anchor="middle" dominant-baseline="central" style="display:none">A</text>
+                        <circle id="point-b-marker" cx="0" cy="0" r="11" fill="#ef4444" stroke="#ffffff" stroke-width="2.5" style="display:none"/>
+                        <text id="point-b-label" x="0" y="0" font-size="16" font-weight="900" fill="#ffffff"
+                              text-anchor="middle" dominant-baseline="central" style="display:none">B</text>
+                    </g>
 
                     <!-- LAYER 2: LA BUSSOLA INTERATTIVA DRAGGABILE E SOVRAPPOSTA -->
                     <g id="compass-draggable-group" class="cursor-grab" transform="translate(350, 700) scale(1.15)">
@@ -420,6 +433,9 @@
                             <stop offset="85%" stop-color="#0284c7" stop-opacity="0.08" />
                             <stop offset="100%" stop-color="#0f172a" stop-opacity="0.45" />
                         </radialGradient>
+                        <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#22c55e"/>
+                        </marker>
                     </defs>
                 </svg>
             </div>
@@ -489,63 +505,73 @@
             <!-- SEZIONE 1.5: ESERCIZIO PRATICO SILVA 3-STEP -->
             <div id="section-map-align" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-xl hidden">
                 <div class="mb-3.5 flex items-center gap-2">
-                    <div class="bg-emerald-600/20 text-emerald-400 p-1.5 rounded-lg">
-                        🏆
-                    </div>
+                    <div class="bg-emerald-600/20 text-emerald-400 p-1.5 rounded-lg">🏆</div>
                     <div>
-                        <h2 class="text-sm font-black text-white uppercase tracking-wider">Esercizio: Silva 3-Step</h2>
-                        <p class="text-[11px] text-slate-400">Misura la rotta reale Doganaccia ➔ Croce Arcana</p>
+                        <h2 class="text-sm font-black text-white uppercase tracking-wider">Esercizio: Silva 2-Step</h2>
+                        <p class="text-[11px] text-slate-400">Imposta due punti sulla mappa e ricava l'azimut di rotta</p>
                     </div>
                 </div>
 
                 <div class="text-xs text-slate-300 leading-relaxed space-y-3.5">
-                    <p>
-                        Questo simulatore valuta in tempo reale i tuoi movimenti sulla mappa. Raggiungi l'allineamento perfetto seguendo i passi:
-                    </p>
 
-                    <div class="space-y-2">
-                        <!-- Step 1 Checklist -->
-                        <div class="flex items-start justify-between p-2.5 bg-slate-950/60 rounded-xl border border-slate-800/80">
-                            <div class="space-y-1 pr-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Passo 1: Posiziona la Bussola</span>
-                                <p class="text-[11px] text-slate-300 font-medium">Trascina la base trasparente sopra la <strong>Doganaccia</strong>.</p>
-                            </div>
-                            <span id="ex-step1-badge" class="text-[10px] shrink-0 self-center">🔴 Verifica...</span>
-                        </div>
-
-                        <!-- Step 2 Checklist -->
-                        <div class="flex items-start justify-between p-2.5 bg-slate-950/60 rounded-xl border border-slate-800/80">
-                            <div class="space-y-1 pr-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Passo 2: Allinea il Bordo</span>
-                                <p class="text-[11px] text-slate-300 font-medium">Ruota il corpo bussola (o lo specchio) a <strong>24°</strong> lungo la rotta.</p>
-                            </div>
-                            <span id="ex-step2-badge" class="text-[10px] shrink-0 self-center">🔴 Verifica...</span>
-                        </div>
-
-                        <!-- Step 3 Checklist -->
-                        <div class="flex items-start justify-between p-2.5 bg-slate-950/60 rounded-xl border border-slate-800/80">
-                            <div class="space-y-1 pr-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Passo 3: Orienta la Ghiera</span>
-                                <p class="text-[11px] text-slate-300 font-medium">Ruota la ghiera a <strong>336°</strong> per allineare le linee interne ai meridiani della carta.</p>
-                            </div>
-                            <span id="ex-step3-badge" class="text-[10px] shrink-0 self-center">🔴 Verifica...</span>
+                    <!-- Toolbar posizionamento punti -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Punti sulla mappa</div>
+                        <div class="flex items-center gap-2">
+                            <button id="btn-place-a" onclick="startPlacingPoint('A')"
+                                class="flex-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 text-[11px] font-bold py-1.5 px-2 rounded-lg transition-colors uppercase">
+                                📍 Punto A
+                            </button>
+                            <button id="btn-place-b" onclick="startPlacingPoint('B')"
+                                class="flex-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 text-[11px] font-bold py-1.5 px-2 rounded-lg transition-colors uppercase">
+                                📍 Punto B
+                            </button>
+                            <button onclick="resetPoints()"
+                                class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 text-[11px] font-bold py-1.5 px-2 rounded-lg transition-colors">
+                                🗑
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Esercizio completato con successo -->
-                    <div id="ex-success-panel" class="p-3.5 bg-emerald-600/10 border-2 border-emerald-500/30 rounded-xl space-y-1.5 hidden animate-pulse">
+                    <!-- Azimut rotta (visibile dopo aver impostato A e B) -->
+                    <div id="route-azimuth-panel" class="hidden flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-emerald-500/30">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Azimut rotta A→B</span>
+                        <span id="route-azimuth" class="text-3xl font-black text-emerald-400 font-mono">—</span>
+                    </div>
+
+                    <!-- Steps (2 only) -->
+                    <div class="space-y-2">
+                        <div class="flex items-start justify-between p-2.5 bg-slate-950/60 rounded-xl border border-slate-800/80">
+                            <div class="space-y-1 pr-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Passo 1: Allinea il Bordo</span>
+                                <p class="text-[11px] text-slate-300 font-medium">Ruota il corpo bussola finché il bordo della base è allineato al segmento A→B.</p>
+                            </div>
+                            <span id="ex-step1-badge" class="text-[10px] shrink-0 self-center text-slate-500">⚪ Imposta A e B</span>
+                        </div>
+                        <div class="flex items-start justify-between p-2.5 bg-slate-950/60 rounded-xl border border-slate-800/80">
+                            <div class="space-y-1 pr-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Passo 2: Orienta la Ghiera</span>
+                                <p class="text-[11px] text-slate-300 font-medium">Ruota la ghiera finché le linee interne si allineano ai meridiani verticali della carta.</p>
+                            </div>
+                            <span id="ex-step2-badge" class="text-[10px] shrink-0 self-center text-slate-500">⚪ Imposta A e B</span>
+                        </div>
+                    </div>
+
+                    <!-- Success panel -->
+                    <div id="ex-success-panel" class="p-3.5 bg-emerald-600/10 border-2 border-emerald-500/30 rounded-xl space-y-1.5 hidden">
                         <div class="flex items-center gap-1.5">
                             <span class="text-base">🎉</span>
                             <span class="font-extrabold text-[12px] text-emerald-400 uppercase tracking-wider">Esercizio Completato!</span>
                         </div>
                         <p class="text-[11px] text-emerald-200/90 leading-relaxed">
-                            Splendido! Hai ricreato esattamente la situazione didattica reale: l'Azimut rilevato sulla linea di fede segna <strong>24° Nord-Est</strong>, e la capsula è orientata correttamente con il Nord geografico della carta.
+                            Perfetto! Azimut rilevato sulla linea di fede: <strong id="success-azimuth" class="text-white">—</strong>.
+                            La ghiera è correttamente allineata ai meridiani della carta.
                         </p>
                     </div>
-                    
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
-                        <span class="font-bold text-slate-200">💡 Suggerimento di allineamento:</span>
-                        <p>Usa il cursore della trasparenza per vedere meglio i meridiani blu della carta attraverso la bussola!</p>
+
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400">
+                        <span class="font-bold text-slate-200">💡 Suggerimento:</span>
+                        Usa la trasparenza per vedere i meridiani blu attraverso la bussola.
                     </div>
                 </div>
             </div>
@@ -705,6 +731,11 @@
         let needleSway = 0;
         let needleVelocity = 0;
         let lastBodyRot = 24;
+
+        // Stato esercizio punti liberi
+        let pointA = null;       // {x, y} in coordinate SVG
+        let pointB = null;       // {x, y} in coordinate SVG
+        let placingPoint = null; // null | 'A' | 'B'
 
         window.onload = function() {
             renderPartsGrid();
@@ -976,6 +1007,17 @@
         function onDragStart(e) {
             if (e.target.id && e.target.id.startsWith('hotspot-')) return;
 
+            // Intercetta click per posizionamento punto A/B
+            if (placingPoint !== null) {
+                e.preventDefault();
+                const svgCoords = getSVGCoords(e);
+                placePoint(placingPoint, svgCoords.x, svgCoords.y);
+                placingPoint = null;
+                cartographySvg.classList.remove('cursor-crosshair');
+                cartographySvg.classList.add('cursor-grab');
+                return;
+            }
+
             const svgCoords = getSVGCoords(e);
             const dx = svgCoords.x - compassX;
             const dy = svgCoords.y - compassY;
@@ -1108,45 +1150,115 @@
             updateExerciseProgress();
         }
 
-        // AGGIORNAMENTO STATO E VALUTAZIONE ESERCIZIO (SILVA 3-STEP)
+        // UTILITÀ GEOMETRICHE
+        function computeBearing(ax, ay, bx, by) {
+            // SVG Y cresce verso il basso; Nord geografico = su = Y negativa
+            const dx = bx - ax;
+            const dy = ay - by; // inversione asse Y per convenzione bussola
+            return Math.round((Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360);
+        }
+
+        function angularDiff(a, b) {
+            let d = Math.abs(a - b) % 360;
+            return d > 180 ? 360 - d : d;
+        }
+
+        // POSIZIONAMENTO PUNTI SULLA MAPPA
+        function startPlacingPoint(label) {
+            placingPoint = label;
+            cartographySvg.classList.remove('cursor-grab', 'cursor-grabbing');
+            cartographySvg.classList.add('cursor-crosshair');
+            const hint = document.getElementById('interaction-tip');
+            if (hint) {
+                hint.textContent = `Clicca sulla mappa per posizionare il punto ${label}`;
+                hint.classList.remove('hidden');
+            }
+        }
+
+        function placePoint(label, x, y) {
+            const isA = label === 'A';
+            if (isA) { pointA = { x, y }; } else { pointB = { x, y }; }
+
+            const marker = document.getElementById(`point-${isA ? 'a' : 'b'}-marker`);
+            const lbl    = document.getElementById(`point-${isA ? 'a' : 'b'}-label`);
+            if (marker) { marker.setAttribute('cx', x); marker.setAttribute('cy', y); marker.style.display = 'block'; }
+            if (lbl)    { lbl.setAttribute('x', x); lbl.setAttribute('y', y); lbl.style.display = 'block'; }
+
+            if (pointA && pointB) {
+                const line = document.getElementById('route-line');
+                if (line) {
+                    line.setAttribute('x1', pointA.x); line.setAttribute('y1', pointA.y);
+                    line.setAttribute('x2', pointB.x); line.setAttribute('y2', pointB.y);
+                    line.style.display = 'block';
+                }
+                const bearing = computeBearing(pointA.x, pointA.y, pointB.x, pointB.y);
+                const panel = document.getElementById('route-azimuth-panel');
+                const az    = document.getElementById('route-azimuth');
+                if (panel) panel.classList.remove('hidden');
+                if (az)    az.textContent = `${bearing}°`;
+            }
+
+            const hint = document.getElementById('interaction-tip');
+            if (hint) hint.classList.add('hidden');
+            updateExerciseProgress();
+        }
+
+        function resetPoints() {
+            pointA = null; pointB = null;
+            ['point-a-marker','point-a-label','point-b-marker','point-b-label','route-line'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            const panel = document.getElementById('route-azimuth-panel');
+            if (panel) panel.classList.add('hidden');
+            updateExerciseProgress();
+        }
+
+        // AGGIORNAMENTO STATO E VALUTAZIONE ESERCIZIO (SILVA 2-STEP)
         function updateExerciseProgress() {
             if (currentTab !== 'map-align') return;
 
-            const dist = Math.sqrt(Math.pow(compassX - 350, 2) + Math.pow(compassY - 700, 2));
-            const isNearDoganaccia = dist < 65;
-            const isBodyAligned = Math.abs(bodyRotation - 24) <= 4 || Math.abs(bodyRotation - 384) <= 4;
-            const isBezelAligned = Math.abs(bezelRotation - 336) <= 4 || Math.abs(bezelRotation + 24) <= 4;
+            const step1Badge   = document.getElementById('ex-step1-badge');
+            const step2Badge   = document.getElementById('ex-step2-badge');
+            const successPanel = document.getElementById('ex-success-panel');
+            const neutral = 'text-[10px] shrink-0 self-center text-slate-500';
 
-            const step1Badge = document.getElementById('ex-step1-badge');
-            const step2Badge = document.getElementById('ex-step2-badge');
-            const step3Badge = document.getElementById('ex-step3-badge');
-            
+            if (!pointA || !pointB) {
+                if (step1Badge) { step1Badge.className = neutral; step1Badge.textContent = '⚪ Imposta A e B'; }
+                if (step2Badge) { step2Badge.className = neutral; step2Badge.textContent = '⚪ Imposta A e B'; }
+                if (successPanel) successPanel.classList.add('hidden');
+                return;
+            }
+
+            const bearing     = computeBearing(pointA.x, pointA.y, pointB.x, pointB.y);
+            const targetBezel = (360 - bodyRotation) % 360;
+            const isBodyAligned  = angularDiff(bodyRotation, bearing) <= 6;
+            const isBezelAligned = angularDiff(bezelRotation, targetBezel) <= 6;
+
+            const ok  = 'text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20 shrink-0 self-center';
+            const err = 'text-[10px] bg-red-500/10 text-red-400 font-bold px-2 py-0.5 rounded border border-red-500/20 shrink-0 self-center';
+
             if (step1Badge) {
-                step1Badge.innerHTML = isNearDoganaccia ? '🟢 Posizionato' : '🔴 Non in posizione';
-                step1Badge.className = isNearDoganaccia 
-                    ? 'text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20' 
-                    : 'text-[10px] bg-red-500/10 text-red-400 font-bold px-2 py-0.5 rounded border border-red-500/20';
+                step1Badge.className = isBodyAligned ? ok : err;
+                step1Badge.textContent = isBodyAligned
+                    ? `🟢 ${bodyRotation}° OK`
+                    : `🔴 corpo: ${bodyRotation}° / rotta: ${bearing}°`;
             }
             if (step2Badge) {
-                step2Badge.innerHTML = isBodyAligned ? `🟢 24° OK` : `🔴 Allinea corpo (${bodyRotation}°)`;
-                step2Badge.className = isBodyAligned 
-                    ? 'text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20' 
-                    : 'text-[10px] bg-red-500/10 text-red-400 font-bold px-2 py-0.5 rounded border border-red-500/20';
-            }
-            if (step3Badge) {
-                step3Badge.innerHTML = isBezelAligned ? `🟢 336° OK` : `🔴 Allinea ghiera (${bezelRotation}°)`;
-                step3Badge.className = isBezelAligned 
-                    ? 'text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20' 
-                    : 'text-[10px] bg-red-500/10 text-red-400 font-bold px-2 py-0.5 rounded border border-red-500/20';
+                step2Badge.className = isBezelAligned ? ok : err;
+                step2Badge.textContent = isBezelAligned
+                    ? `🟢 ${bezelRotation}° OK`
+                    : `🔴 ghiera: ${bezelRotation}° / target: ${targetBezel}°`;
             }
 
-            const successPanel = document.getElementById('ex-success-panel');
-            if (successPanel) {
-                if (isNearDoganaccia && isBodyAligned && isBezelAligned) {
-                    successPanel.classList.remove('hidden');
-                } else {
-                    successPanel.classList.add('hidden');
-                }
+            if (isBodyAligned && isBezelAligned) {
+                if (successPanel) successPanel.classList.remove('hidden');
+                const azEl = document.getElementById('success-azimuth');
+                if (azEl) azEl.textContent = `${bodyRotation}°`;
+                const az = document.getElementById('route-azimuth');
+                if (az) az.textContent = `${bodyRotation}°`;
+            } else {
+                if (successPanel) successPanel.classList.add('hidden');
             }
         }
 
