@@ -82,6 +82,12 @@
                 </div>
                 
                 <div class="flex items-center gap-1.5">
+                    <!-- Bottone Upload Mappa -->
+                    <label class="cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all" title="PNG/JPG/WebP · Consigliato 1000×1000 px (1:1)">
+                        <span>🗺️</span> <span>Carica Mappa</span>
+                        <input type="file" id="map-upload-input" accept="image/*" class="hidden" onchange="loadCustomMap(this)">
+                    </label>
+                    <span id="map-upload-badge" class="hidden text-[10px] bg-sky-500/10 text-sky-400 px-2 py-1 rounded border border-sky-500/20 font-mono truncate max-w-[140px]"></span>
                     <!-- Bottone Ingrandimento Totale -->
                     <button onclick="toggleWorkspaceMaximize()" id="btn-maximize" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow transition-all">
                         <span id="max-btn-icon">👁️‍🗨️</span> <span id="max-btn-text">Ingrandisci Area</span>
@@ -103,8 +109,10 @@
                     <!-- LAYER 1: CARTA TOPOGRAFICA REALE (Croce Arcana, Doganaccia, Il Pizzo, Le Piagge, sentieri CAI) -->
                     <g id="map-group" transform="translate(0, 0) scale(1)">
                         <!-- Sfondo Carta Invecchiata -->
-                        <rect x="0" y="0" width="1000" height="1000" fill="#f8f6ed" stroke="#334155" stroke-width="4" />
-                        
+                        <rect id="map-bg-rect" x="0" y="0" width="1000" height="1000" fill="#f8f6ed" stroke="#334155" stroke-width="4" />
+                        <image id="custom-map-image" x="0" y="0" width="1000" height="1000" preserveAspectRatio="xMidYMid slice" style="display:none" href=""/>
+
+                        <g id="map-drawn-content">
                         <!-- Meridiani Verticali (Reticolo Blu di orientamento carta) -->
                         <g stroke="#0284c7" stroke-width="1.2" opacity="0.35">
                             <line x1="100" y1="0" x2="100" y2="1000" stroke-dasharray="3 3" />
@@ -193,6 +201,7 @@
                             <line x1="-25" y1="0" x2="25" y2="0" stroke="#334155" stroke-width="1" />
                             <text x="0" y="-30" font-size="11" font-weight="black" fill="#ef4444" text-anchor="middle">NORD MAPPA</text>
                         </g>
+                        </g> <!-- FINE MAP-DRAWN-CONTENT -->
                     </g> <!-- FINE LAYER 1 MAPPA -->
 
 
@@ -449,6 +458,12 @@
                         <input type="checkbox" id="toggle-mirror" checked onchange="toggleMirror(this.checked)" class="sr-only peer">
                         <div class="w-7 h-4 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
                         <span class="ml-2 text-[10px] text-slate-400 font-semibold">Coperchio Specchio</span>
+                    </label>
+                    <!-- Toggle Overlay CAI (compare dopo upload mappa) -->
+                    <label id="toggle-overlay-row" class="relative inline-flex items-center cursor-pointer" style="display:none">
+                        <input type="checkbox" id="toggle-map-overlay" checked onchange="toggleMapOverlay(this.checked)" class="sr-only peer">
+                        <div class="w-7 h-4 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
+                        <span class="ml-2 text-[10px] text-slate-400 font-semibold">Overlay CAI</span>
                     </label>
                 </div>
 
@@ -1168,6 +1183,38 @@
 
             lastBodyRot = bodyRotation;
             requestAnimationFrame(animateNeedlePhysics);
+        }
+
+        // UPLOAD MAPPA PERSONALIZZATA
+        function loadCustomMap(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgEl = document.getElementById('custom-map-image');
+                if (imgEl) {
+                    imgEl.setAttribute('href', e.target.result);
+                    imgEl.style.display = 'block';
+                }
+                const bgRect = document.getElementById('map-bg-rect');
+                if (bgRect) bgRect.style.display = 'none';
+
+                const overlayRow = document.getElementById('toggle-overlay-row');
+                if (overlayRow) overlayRow.style.display = 'flex';
+
+                const badge = document.getElementById('map-upload-badge');
+                if (badge) {
+                    badge.textContent = file.name;
+                    badge.classList.remove('hidden');
+                }
+                updateStatus(`<span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span> Mappa personalizzata`);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleMapOverlay(visible) {
+            const overlay = document.getElementById('map-drawn-content');
+            if (overlay) overlay.style.display = visible ? 'block' : 'none';
         }
 
         // COMPENSATORE DECLINAZIONE
