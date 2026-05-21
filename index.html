@@ -441,7 +441,7 @@
             </div>
 
             <!-- PANNELLO CONTROLLI INTEGRATO SOTTO IL CANVAS -->
-            <div class="w-full mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
+            <div class="w-full mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
                 <!-- Controllo 1: Trasparenza Bussola -->
                 <div class="flex flex-col justify-center">
                     <div class="flex justify-between text-[11px] mb-1 font-semibold text-slate-400">
@@ -475,25 +475,6 @@
                         <div class="w-7 h-4 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
                         <span class="ml-2 text-[10px] text-slate-400 font-semibold">Coperchio Specchio</span>
                     </label>
-                    <!-- Toggle Overlay CAI (compare dopo upload mappa) -->
-                    <label id="toggle-overlay-row" class="relative inline-flex items-center cursor-pointer" style="display:none">
-                        <input type="checkbox" id="toggle-map-overlay" checked onchange="toggleMapOverlay(this.checked)" class="sr-only peer">
-                        <div class="w-7 h-4 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
-                        <span class="ml-2 text-[10px] text-slate-400 font-semibold">Overlay CAI</span>
-                    </label>
-                </div>
-
-                <!-- Controllo 4: Posizionamento automatico -->
-                <div class="flex items-center gap-1.5 justify-center sm:col-span-2 md:col-span-1">
-                    <button onclick="snapToPoint('doganaccia')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700 transition-colors uppercase">
-                        📍 Doganaccia
-                    </button>
-                    <button onclick="snapToPoint('crocearcana')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700 transition-colors uppercase">
-                        📍 Croce Arcana
-                    </button>
-                    <button onclick="resetRotationsAndScale()" class="flex-1 bg-slate-950 hover:bg-slate-900 text-[10px] font-bold py-1.5 text-slate-400 hover:text-white rounded-lg border border-slate-800 transition-colors uppercase">
-                        🔄 Reset
-                    </button>
                 </div>
             </div>
 
@@ -533,10 +514,16 @@
                         </div>
                     </div>
 
-                    <!-- Azimut rotta (visibile dopo aver impostato A e B) -->
-                    <div id="route-azimuth-panel" class="hidden flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-emerald-500/30">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Azimut rotta A→B</span>
-                        <span id="route-azimuth" class="text-3xl font-black text-emerald-400 font-mono">—</span>
+                    <!-- Lettura bussola (sempre visibile, combinazione corpo+ghiera) -->
+                    <div class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lettura bussola</span>
+                        <span id="compass-reading" class="text-3xl font-black text-emerald-400 font-mono">0°</span>
+                    </div>
+
+                    <!-- Azimut obiettivo (visibile dopo aver impostato A e B) -->
+                    <div id="route-azimuth-panel" class="hidden flex items-center justify-between p-2.5 bg-slate-950 rounded-xl border border-sky-500/30">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Obiettivo A→B</span>
+                        <span id="route-azimuth" class="text-lg font-black text-sky-400 font-mono">—</span>
                     </div>
 
                     <!-- Steps (2 only) -->
@@ -551,7 +538,7 @@
                         <div class="flex items-start justify-between p-2.5 bg-slate-950/60 rounded-xl border border-slate-800/80">
                             <div class="space-y-1 pr-2">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Passo 2: Orienta la Ghiera</span>
-                                <p class="text-[11px] text-slate-300 font-medium">Ruota la ghiera finché le linee interne si allineano ai meridiani verticali della carta.</p>
+                                <p class="text-[11px] text-slate-300 font-medium">Ruota la ghiera finché la <strong>Lettura bussola</strong> coincide con l'obiettivo A→B.</p>
                             </div>
                             <span id="ex-step2-badge" class="text-[10px] shrink-0 self-center text-slate-500">⚪ Imposta A e B</span>
                         </div>
@@ -984,13 +971,14 @@
 
         // GESTIONE COORDINATE MOUSE/TOUCH RELATIVE A SVG
         function getSVGCoords(e) {
-            const rect = cartographySvg.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            const x = ((clientX - rect.left) / rect.width) * 1000;
-            const y = ((clientY - rect.top) / rect.height) * 1000;
-            return { x, y };
+            // getScreenCTM gestisce correttamente scaling, letterbox e CSS transforms
+            const pt = cartographySvg.createSVGPoint();
+            pt.x = clientX;
+            pt.y = clientY;
+            const svgP = pt.matrixTransform(cartographySvg.getScreenCTM().inverse());
+            return { x: svgP.x, y: svgP.y };
         }
 
         // DISPOSITIVO DI INTERAZIONE MULTI-ZONE (Trascinamento / Rotazione Ghiera / Rotazione Specchio)
@@ -1147,6 +1135,12 @@
             if (bezelGroup) {
                 bezelGroup.setAttribute('transform', `rotate(${bezelRotation}, 0, 0)`);
             }
+
+            // Lettura bussola = graduazione sotto la linea di fede = f(ghiera)
+            const reading = (360 - bezelRotation % 360 + 360) % 360;
+            const readingEl = document.getElementById('compass-reading');
+            if (readingEl) readingEl.textContent = `${reading}°`;
+
             updateExerciseProgress();
         }
 
@@ -1230,10 +1224,10 @@
                 return;
             }
 
-            const bearing     = computeBearing(pointA.x, pointA.y, pointB.x, pointB.y);
-            const targetBezel = (360 - bodyRotation) % 360;
+            const bearing        = computeBearing(pointA.x, pointA.y, pointB.x, pointB.y);
+            const compassReading = (360 - bezelRotation % 360 + 360) % 360;
             const isBodyAligned  = angularDiff(bodyRotation, bearing) <= 6;
-            const isBezelAligned = angularDiff(bezelRotation, targetBezel) <= 6;
+            const isBezelAligned = angularDiff(compassReading, bearing) <= 6;
 
             const ok  = 'text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20 shrink-0 self-center';
             const err = 'text-[10px] bg-red-500/10 text-red-400 font-bold px-2 py-0.5 rounded border border-red-500/20 shrink-0 self-center';
@@ -1247,16 +1241,14 @@
             if (step2Badge) {
                 step2Badge.className = isBezelAligned ? ok : err;
                 step2Badge.textContent = isBezelAligned
-                    ? `🟢 ${bezelRotation}° OK`
-                    : `🔴 ghiera: ${bezelRotation}° / target: ${targetBezel}°`;
+                    ? `🟢 Lettura ${compassReading}° OK`
+                    : `🔴 lettura: ${compassReading}° / obiettivo: ${bearing}°`;
             }
 
             if (isBodyAligned && isBezelAligned) {
                 if (successPanel) successPanel.classList.remove('hidden');
                 const azEl = document.getElementById('success-azimuth');
-                if (azEl) azEl.textContent = `${bodyRotation}°`;
-                const az = document.getElementById('route-azimuth');
-                if (az) az.textContent = `${bodyRotation}°`;
+                if (azEl) azEl.textContent = `${compassReading}°`;
             } else {
                 if (successPanel) successPanel.classList.add('hidden');
             }
@@ -1310,9 +1302,6 @@
                 }
                 const bgRect = document.getElementById('map-bg-rect');
                 if (bgRect) bgRect.style.display = 'none';
-
-                const overlayRow = document.getElementById('toggle-overlay-row');
-                if (overlayRow) overlayRow.style.display = 'flex';
 
                 const badge = document.getElementById('map-upload-badge');
                 if (badge) {
